@@ -12,7 +12,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "https://vidchat-client.vercel.app", // Ensure this is the correct client URL
+    origin: "https://vidchat-client.vercel.app", // Ensure this is the correct client URL
     methods: ["GET", "POST"],
   },
 });
