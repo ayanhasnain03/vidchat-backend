@@ -1,7 +1,7 @@
 import express from "express";
 import { Server } from "socket.io";
 import http from "http";
-import cors from "cors";
+
 import dotenv from "dotenv";
 
 // Load environment variables from .env file
@@ -17,8 +17,6 @@ const io = new Server(server, {
   },
 });
 
-// Middleware
-app.use(cors());
 app.use(express.json()); // To handle JSON data if needed
 
 // Handle socket connections and events
