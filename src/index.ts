@@ -1,60 +1,55 @@
 import express from "express";
 import { Server } from "socket.io";
 import http from "http";
-
 import dotenv from "dotenv";
 
 // Load environment variables from .env file
 dotenv.config();
 
-// Express and Socket.IO setup
 const app = express();
 const server = http.createServer(app);
+
+// Configure Socket.IO with CORS
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173", // Ensure this is the correct client URL
+    origin: process.env.CLIENT_URL || "https://vidchat-client.vercel.app", // Default to localhost in dev
     methods: ["GET", "POST"],
   },
 });
 
-app.use(express.json()); // To handle JSON data if needed
+// Middleware for JSON data
+app.use(express.json());
 
-// Handle socket connections and events
+// Handle socket connections
 io.on("connection", (socket) => {
-  console.log("A user connected:", socket.id); // Log the connection
+  console.log("A user connected:", socket.id);
 
   socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id); // Log when a user disconnects
+    console.log("User disconnected:", socket.id);
   });
 
-  socket.on("join-room", (roomId: string, userId: string) => {
+  socket.on("join-room", (roomId, userId) => {
     socket.join(roomId);
     console.log(`${userId} joined room: ${roomId}`);
     socket.to(roomId).emit("user-connected", userId);
 
-    // Handle messages and WebRTC events
-    socket.on("send-message", (message: string) => {
-      console.log(`Message from ${userId} in room ${roomId}: ${message}`);
+    socket.on("send-message", (message) => {
       socket.to(roomId).emit("receive-message", message);
     });
 
     socket.on("offer", (offer) => {
-      console.log(`Offer sent in room ${roomId}`);
       socket.to(roomId).emit("offer", offer);
     });
 
     socket.on("answer", (answer) => {
-      console.log(`Answer sent in room ${roomId}`);
       socket.to(roomId).emit("answer", answer);
     });
 
     socket.on("ice-candidate", (candidate) => {
-      console.log(`ICE candidate sent in room ${roomId}`);
       socket.to(roomId).emit("ice-candidate", candidate);
     });
 
     socket.on("screen-share", (screenStream) => {
-      console.log(`Screen sharing in room ${roomId}`);
       socket.to(roomId).emit("screen-share", screenStream);
     });
   });
